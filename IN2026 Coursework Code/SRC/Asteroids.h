@@ -52,6 +52,16 @@ private:
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
+	// labels can act as buttons as well with listener
+	shared_ptr<GUILabel> mStartScreenLabel;
+	shared_ptr<GUILabel> mStartLabel;
+	shared_ptr<GUILabel> mDifficultyLabel;
+	shared_ptr<GUILabel> mInstructionsLabel;
+	shared_ptr<GUILabel> mGamerTagLabel;
+	shared_ptr<GUILabel> mNameEntryLabel;
+	// they are for the game start
+	// need to keep aware of game state for later requirements
+	bool mGameStarted = false;
 
 	uint mLevel;
 	uint mAsteroidCount;
@@ -61,7 +71,12 @@ private:
 	void CreateGUI();
 	void CreateAsteroids(const uint num_asteroids);
 	shared_ptr<GameObject> CreateExplosion();
-	
+	// declare start GUI
+	void CreateStartGUI();
+	//
+	// declare hide start menu method
+	void HideStartMenuComponents();
+
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;

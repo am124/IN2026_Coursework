@@ -58,10 +58,15 @@ void Asteroids::Start()
 	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
+	// Create Custom Start Menu
+	CreateStartGUI();
+
 	// Create a spaceship and add it to the world
-	mGameWorld->AddObject(CreateSpaceship());
+	//mGameWorld->AddObject(CreateSpaceship());
 	// Create some asteroids and add them to the world
-	CreateAsteroids(10);
+	//CreateAsteroids(10);
+	// commented out as not required here
+
 
 	//Create the GUI
 	CreateGUI();
@@ -87,17 +92,35 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 {
-	switch (key)
+    switch (key)
 	{
+	case 13:
+		if (!mGameStarted) {
+			// for the start functionality, boolean for state tracking, initalised mGameStart to false in the header
+	       // enter key value is 13
+		   // lets now turn off the labels, with a helper method
+			HideStartMenuComponents();
+			CreateGUI();
+			mGameWorld->AddObject(CreateSpaceship());
+			CreateAsteroids(10);
+			// enter turns to true state
+			mGameStarted = true;
+			// prevent further processing, as somehow shooting occurs if not early return.
+			return;
+		}
 	case ' ':
 		mSpaceship->Shoot();
 		break;
-	default:
+
+	default:  
 		break;
 	}
 }
 
-void Asteroids::OnKeyReleased(uchar key, int x, int y) {}
+void Asteroids::OnKeyReleased(uchar key, int x, int y) {
+
+	
+}
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 {
@@ -209,11 +232,46 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 		mGameWorld->AddObject(asteroid);
 	}
 }
+void Asteroids::CreateStartGUI() {
 
+	// Start Screen Label
+	mStartScreenLabel = make_shared<GUILabel>("Start Screen");
+	mStartScreenLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> menu_component
+		= static_pointer_cast<GUIComponent>(mStartScreenLabel);
+	mGameDisplay->GetContainer()->AddComponent(menu_component, GLVector2f(0.4f, 1.0f));
+	// Start Label
+	mStartLabel = make_shared<GUILabel>("Start Game");
+	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> start_component
+		= static_pointer_cast<GUIComponent>(mStartLabel);
+	mGameDisplay->GetContainer()->AddComponent(start_component, GLVector2f(0.4f, 0.8f));
+	// Difficulty Label. An option so binary
+	mDifficultyLabel = make_shared<GUILabel>("Hard Mode");
+	mDifficultyLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+	shared_ptr<GUIComponent> difficulty_component
+		= static_pointer_cast<GUIComponent>(mDifficultyLabel);
+	mGameDisplay->GetContainer()->AddComponent(difficulty_component, GLVector2f(0.4f, 0.6f));
+	// Gameplay Instructions.
+	mInstructionsLabel = make_shared<GUILabel>("Instructions");
+	mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+	shared_ptr<GUIComponent> instructions_component
+		= static_pointer_cast<GUIComponent>(mInstructionsLabel);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component, GLVector2f(0.4f, 0.4f));
+	// Gametag Label
+	mGamerTagLabel = make_shared<GUILabel>("Enter Gamer Tag");
+	mGamerTagLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+	shared_ptr<GUIComponent> tag_component
+		= static_pointer_cast<GUIComponent>(mGamerTagLabel);
+	mGameDisplay->GetContainer()->AddComponent(tag_component, GLVector2f(0.4f, 0.2f));
+
+
+}
 void Asteroids::CreateGUI()
 {
 	// Add a (transparent) border around the edge of the game display
 	mGameDisplay->GetContainer()->SetBorder(GLVector2i(10, 10));
+
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mScoreLabel = make_shared<GUILabel>("Score: 0");
 	// Set the vertical alignment of the label to GUI_VALIGN_TOP
@@ -222,7 +280,6 @@ void Asteroids::CreateGUI()
 	shared_ptr<GUIComponent> score_component
 		= static_pointer_cast<GUIComponent>(mScoreLabel);
 	mGameDisplay->GetContainer()->AddComponent(score_component, GLVector2f(0.0f, 1.0f));
-
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mLivesLabel = make_shared<GUILabel>("Lives: 3");
 	// Set the vertical alignment of the label to GUI_VALIGN_BOTTOM
@@ -244,6 +301,28 @@ void Asteroids::CreateGUI()
 		= static_pointer_cast<GUIComponent>(mGameOverLabel);
 	mGameDisplay->GetContainer()->AddComponent(game_over_component, GLVector2f(0.5f, 0.5f));
 
+}
+// helper method
+void Asteroids::HideStartMenuComponents() {
+	// check if null before accessing pointers to guard against null pointers
+	if (mStartScreenLabel) {
+		mStartScreenLabel->SetVisible(false);
+     }
+	if (mStartLabel) {
+		mStartLabel->SetVisible(false);
+	}
+	if (mDifficultyLabel) {
+		mDifficultyLabel->SetVisible(false);
+	}
+	if (mInstructionsLabel) {
+		mInstructionsLabel->SetVisible(false);
+	}
+	if (mGamerTagLabel) {
+		mGamerTagLabel->SetVisible(false);
+	}
+	if (mNameEntryLabel) {
+		mNameEntryLabel->SetVisible(false);
+	}
 }
 
 void Asteroids::OnScoreChanged(int score)
