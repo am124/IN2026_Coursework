@@ -67,7 +67,7 @@ void Asteroids::Start()
 	//CreateAsteroids(10);
 	// commented out as not required here
 
-
+	CreateAsteroids(10);
 	//Create the GUI
 	CreateGUI();
 
@@ -91,26 +91,48 @@ void Asteroids::Stop()
 // PUBLIC INSTANCE METHODS IMPLEMENTING IKeyboardListener /////////////////////
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
-{
+{ 
+
     switch (key)
 	{
 	case 13:
 		if (!mGameStarted) {
-			// for the start functionality, boolean for state tracking, initalised mGameStart to false in the header
-	       // enter key value is 13
-		   // lets now turn off the labels, with a helper method
-			HideStartMenuComponents();
-			CreateGUI();
-			mGameWorld->AddObject(CreateSpaceship());
-			CreateAsteroids(10);
-			// enter turns to true state
-			mGameStarted = true;
-			// prevent further processing, as somehow shooting occurs if not early return.
+			if (mIndex == 0) {
+				// for the start functionality, boolean for state tracking, initalised mGameStart to false in the header
+		       // enter key value is 13
+		       // lets now turn off the labels, with a helper method
+				HideStartMenuComponents();
+				CreateGUI();
+				mGameWorld->AddObject(CreateSpaceship());
+				// enter turns to true state
+				mGameStarted = true;
+			}
+			else if (mIndex == 1) {
+				// instruciton processing
+			}
+			else if (mIndex == 2) {
+				//....
+			}
+			else if (mIndex == 3) {
+				//
+			}
+		    // prevent further processing, as somehow shooting occurs if not early return.
 			return;
 		}
-	case ' ':
-		mSpaceship->Shoot();
 		break;
+
+	case ' ':
+		// space bar also a traveller 
+		if (!mGameStarted) {
+			mIndex = (mIndex + 1) % 4;
+			HighlightLabels();
+		}
+		else {
+			// it has to be here as spaceship only created when boolean turns true
+			mSpaceship->Shoot();
+		}
+		break;
+	
 
 	default:  
 		break;
@@ -124,32 +146,50 @@ void Asteroids::OnKeyReleased(uchar key, int x, int y) {
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 {
-	switch (key)
-	{
-	// If up arrow key is pressed start applying forward thrust
-	case GLUT_KEY_UP: mSpaceship->Thrust(10); break;
-	// If left arrow key is pressed start rotating anti-clockwise
-	case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
-	// If right arrow key is pressed start rotating clockwise
-	case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
-	// Default case - do nothing
-	default: break;
+	// as mentioned above this prevents crashing as should only apply when in game state
+	if (mGameStarted) {
+
+		switch (key)
+		{
+			// If up arrow key is pressed start applying forward thrust
+		case GLUT_KEY_UP: mSpaceship->Thrust(10); break;
+
+
+			// If left arrow key is pressed start rotating anti-clockwise
+		case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
+
+
+			// If right arrow key is pressed start rotating clockwise
+		case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
+
+
+			// Default case - do nothing
+		default: break;
+		}
+
 	}
+	
 }
 
 void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
-{
-	switch (key)
-	{
-	// If up arrow key is released stop applying forward thrust
-	case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
-	// If left arrow key is released stop rotating
-	case GLUT_KEY_LEFT: mSpaceship->Rotate(0); break;
-	// If right arrow key is released stop rotating
-	case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
-	// Default case - do nothing
-	default: break;
-	} 
+{	
+	// as mentioned above this prevents crashing as should only apply when in game state
+	if (mGameStarted) {
+
+		switch (key)
+		{
+			// If up arrow key is released stop applying forward thrust
+		case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
+			// If left arrow key is released stop rotating
+		case GLUT_KEY_LEFT: mSpaceship->Rotate(0); break;
+			// If right arrow key is released stop rotating
+		case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
+			// Default case - do nothing
+		default: break;
+		}
+
+	}
+	
 }
 
 
@@ -233,8 +273,7 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 	}
 }
 void Asteroids::CreateStartGUI() {
-
-	// Start Screen Label
+    // Start Screen Label
 	mStartScreenLabel = make_shared<GUILabel>("Start Screen");
 	mStartScreenLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
 	shared_ptr<GUIComponent> menu_component
@@ -243,6 +282,7 @@ void Asteroids::CreateStartGUI() {
 	// Start Label
 	mStartLabel = make_shared<GUILabel>("Start Game");
 	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	mStartLabel->SetColor(GLVector3f(1.0f, 1.0f, 0.0f));
 	shared_ptr<GUIComponent> start_component
 		= static_pointer_cast<GUIComponent>(mStartLabel);
 	mGameDisplay->GetContainer()->AddComponent(start_component, GLVector2f(0.4f, 0.8f));
@@ -265,6 +305,17 @@ void Asteroids::CreateStartGUI() {
 		= static_pointer_cast<GUIComponent>(mGamerTagLabel);
 	mGameDisplay->GetContainer()->AddComponent(tag_component, GLVector2f(0.4f, 0.2f));
 
+}
+void Asteroids::HighlightLabels() {
+	// this will use the mIndex we declared in header.
+	// we are using yellow colour (first set thats wrapped around GLVector3f) and white
+	// with the second set, so if true its yellow, if not true its white, hence why we initialsied the start
+	// label to be yellow as well.
+
+	mStartLabel->SetColor(mIndex == 0 ? GLVector3f(1.0f, 1.0f, 0.0f): GLVector3f(1.0, 1.0f, 1.0f));
+	mDifficultyLabel->SetColor(mIndex == 1 ? GLVector3f(1.0f, 1.0f, 0.0f) : GLVector3f(1.0, 1.0f, 1.0f));
+	mInstructionsLabel->SetColor(mIndex == 2 ? GLVector3f(1.0f, 1.0f, 0.0f) : GLVector3f(1.0, 1.0f, 1.0f));
+	mGamerTagLabel->SetColor(mIndex == 3 ? GLVector3f(1.0f, 1.0f, 0.0f) : GLVector3f(1.0, 1.0f, 1.0f));
 
 }
 void Asteroids::CreateGUI()
@@ -302,9 +353,11 @@ void Asteroids::CreateGUI()
 	mGameDisplay->GetContainer()->AddComponent(game_over_component, GLVector2f(0.5f, 0.5f));
 
 }
+
 // helper method
 void Asteroids::HideStartMenuComponents() {
 	// check if null before accessing pointers to guard against null pointers
+	// when starting the game essentially
 	if (mStartScreenLabel) {
 		mStartScreenLabel->SetVisible(false);
      }

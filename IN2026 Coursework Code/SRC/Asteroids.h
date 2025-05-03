@@ -62,9 +62,15 @@ private:
 	// they are for the game start
 	// need to keep aware of game state for later requirements
 	bool mGameStarted = false;
+	// keep track of labels to apply highligting in the start menu
+	int mIndex = 0; 
+	// corresponsing method for the highlighting
+	void HighlightLabels();
 
 	uint mLevel;
 	uint mAsteroidCount;
+
+	
 
 	void ResetSpaceship();
 	shared_ptr<GameObject> CreateSpaceship();
