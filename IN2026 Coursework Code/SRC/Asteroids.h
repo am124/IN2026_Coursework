@@ -52,7 +52,7 @@ private:
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
-	// labels can act as buttons as well with listener
+	// labels can act as buttons as well with some flourishes involving the keyboard listener and visual cues.
 	shared_ptr<GUILabel> mStartScreenLabel;
 	shared_ptr<GUILabel> mStartLabel;
 	shared_ptr<GUILabel> mDifficultyLabel;
@@ -66,7 +66,28 @@ private:
 	int mIndex = 0; 
 	// corresponsing method for the highlighting
 	void HighlightLabels();
+	// method for displaying instructions, essentially like a helper method as will do all the state changes
+	void ShowInstructions();;
+	// a corresponding boolean for this as well
+	bool mViewingInstructions = false;
+	// a pointer variable of type label for the information to be displayed. multiple required can figure out 
+	// new line character
+	shared_ptr<GUILabel> mInstructionsTextLabel1;
+	shared_ptr<GUILabel> mInstructionsTextLabel2;
+	shared_ptr<GUILabel> mInstructionsTextLabel3;
+	shared_ptr<GUILabel> mInstructionsTextLabel4;
+	shared_ptr<GUILabel> mInstructionsTextLabel5;
+	shared_ptr<GUILabel> mInstructionsTextLabel6;
+	shared_ptr<GUILabel> mInstructionsTextLabel7;
+	
+	// a method to initliase them
+	void CreateInstructions();
+	void HideInstructions();
 
+
+
+
+	
 	uint mLevel;
 	uint mAsteroidCount;
 
@@ -82,6 +103,8 @@ private:
 	//
 	// declare hide start menu method
 	void HideStartMenuComponents();
+	// also show the componentes 
+	void ShowStartMenuComponents();
 
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;

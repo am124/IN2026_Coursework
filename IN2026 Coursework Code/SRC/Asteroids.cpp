@@ -111,7 +111,12 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				// instruciton processing
 			}
 			else if (mIndex == 2) {
-				//....
+				// Conditional statement required, as you can spam the state instuctions state and it will be softlocked into 
+				// permanently displaying them
+				if (!mViewingInstructions) {
+					ShowInstructions();
+
+				}
 			}
 			else if (mIndex == 3) {
 				//
@@ -130,6 +135,15 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		else {
 			// it has to be here as spaceship only created when boolean turns true
 			mSpaceship->Shoot();
+		}
+		if (mViewingInstructions) {
+			// exit out of instructions
+			HideInstructions();
+			mViewingInstructions = false;
+			ShowStartMenuComponents();
+
+			
+			
 		}
 		break;
 	
@@ -353,7 +367,82 @@ void Asteroids::CreateGUI()
 	mGameDisplay->GetContainer()->AddComponent(game_over_component, GLVector2f(0.5f, 0.5f));
 
 }
+// for viewing instructions
+void Asteroids::ShowInstructions() {
+	// lets also use a boolean for viewing instuctions, as we want to use to escape the instructions screen
+	// declared in header file.
+	HideStartMenuComponents();
+	// we also need to create a new label that has a shared pointer assigned to it. shared pointer declared 
+	// in header file.
+	CreateInstructions();
 
+	mViewingInstructions = true;
+
+
+
+}
+// instuction text creation 
+void Asteroids::CreateInstructions() {
+	mInstructionsTextLabel1 = make_shared<GUILabel>("1) Arrow keys to navigate");
+	mInstructionsTextLabel1->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component1 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel1);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component1, GLVector2f(0.23, 0.8f));
+
+	mInstructionsTextLabel2 = make_shared<GUILabel>("2) Spacebar to shoot");
+	mInstructionsTextLabel2->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component2 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel2);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component2, GLVector2f(0.23, 0.7f));
+
+	mInstructionsTextLabel3 = make_shared<GUILabel>("3) Shoot Asteroids");
+	mInstructionsTextLabel3->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component3 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel3);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component3, GLVector2f(0.23, 0.6f));
+
+	mInstructionsTextLabel4 = make_shared<GUILabel>("4) Get hit lose a life");
+	mInstructionsTextLabel4->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component4 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel4);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component4, GLVector2f(0.23, 0.5f));
+
+	mInstructionsTextLabel5 = make_shared<GUILabel>("5) Hard mode available");
+	mInstructionsTextLabel5->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component5 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel5);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component5, GLVector2f(0.23, 0.4f));
+
+	mInstructionsTextLabel6 = make_shared<GUILabel>("6) Scoreboard available");
+	mInstructionsTextLabel6->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component6 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel6);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component6, GLVector2f(0.23, 0.3f));
+
+	mInstructionsTextLabel7 = make_shared<GUILabel>("Spacebar to go back");
+	mInstructionsTextLabel7->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> instructions_component7 = static_pointer_cast<GUIComponent>(mInstructionsTextLabel7);
+	mGameDisplay->GetContainer()->AddComponent(instructions_component7, GLVector2f(0.23, 0.2f));
+
+}
+// hide instructions method
+void Asteroids::HideInstructions() {
+	if (mInstructionsTextLabel1) {
+		mInstructionsTextLabel1->SetVisible(false);
+	}
+	if (mInstructionsTextLabel2) {
+		mInstructionsTextLabel2->SetVisible(false);
+
+	}if (mInstructionsTextLabel3) {
+		mInstructionsTextLabel3->SetVisible(false);
+
+	}if (mInstructionsTextLabel4) {
+		mInstructionsTextLabel4->SetVisible(false);
+
+	}if (mInstructionsTextLabel5) {
+		mInstructionsTextLabel5->SetVisible(false);
+
+	}if (mInstructionsTextLabel6) {
+		mInstructionsTextLabel6->SetVisible(false);
+
+	}if (mInstructionsTextLabel7) {
+		mInstructionsTextLabel7->SetVisible(false);
+	}
+}
 // helper method
 void Asteroids::HideStartMenuComponents() {
 	// check if null before accessing pointers to guard against null pointers
@@ -375,6 +464,30 @@ void Asteroids::HideStartMenuComponents() {
 	}
 	if (mNameEntryLabel) {
 		mNameEntryLabel->SetVisible(false);
+	}
+}
+// inverse of the HideStart method good to have
+// helper method
+void Asteroids::ShowStartMenuComponents() {
+	// check if null before accessing pointers to guard against null pointers
+	// when starting the game essentially
+	if (mStartScreenLabel) {
+		mStartScreenLabel->SetVisible(true);
+	}
+	if (mStartLabel) {
+		mStartLabel->SetVisible(true);
+	}
+	if (mDifficultyLabel) {
+		mDifficultyLabel->SetVisible(true);
+	}
+	if (mInstructionsLabel) {
+		mInstructionsLabel->SetVisible(true);
+	}
+	if (mGamerTagLabel) {
+		mGamerTagLabel->SetVisible(true);
+	}
+	if (mNameEntryLabel) {
+		mNameEntryLabel->SetVisible(true);
 	}
 }
 
