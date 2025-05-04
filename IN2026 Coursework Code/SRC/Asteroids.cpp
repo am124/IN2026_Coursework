@@ -70,6 +70,7 @@ void Asteroids::Start()
 	CreateAsteroids(10);
 	//Create the GUI
 	CreateGUI();
+	HideScoreLives();
 
 	// Add a player (watcher) to the game world
 	mGameWorld->AddListener(&mPlayer);
@@ -92,11 +93,41 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 { 
+	if (mAskUser) {
+		// I feel like this should be in cases, as, this is not robust given that both exist if and cases exist.
+		// All characters within ASCII range
+		if (key >= 32 && key <= 126) {
+			// Append each character to string
+			mStringInput += (char)key;  
+		}
+		// backspace to remove last character. 
+		else if (key == 8 && !mStringInput.empty()) {
+			// this call to a string takes off the last character
+			mStringInput.pop_back();  
+		}
+	
+		// Update the label text to reflect the player's current input
+		mUserInputLabel->SetText(mStringInput);  
+
+		// Draw the updated label immediately after changing the text
+		mUserInputLabel->Draw();
+	}
 
     switch (key)
 	{
 	case 13:
-		if (!mGameStarted) {
+
+		if (mAskUser) {
+			// enter key here finalises user input
+			HideAskUserGUI();
+			mAskUser = false;
+			std::cout << "Player Name Entered: " << mAskUser << std::endl;
+			ShowStartMenuComponents();
+         }
+
+
+        else if (!mGameStarted) {
+			
 			if (mIndex == 0) {
 				// for the start functionality, boolean for state tracking, initalised mGameStart to false in the header
 		       // enter key value is 13
@@ -106,25 +137,38 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				mGameWorld->AddObject(CreateSpaceship());
 				// enter turns to true state
 				mGameStarted = true;
+
 			}
 			else if (mIndex == 1) {
-				// instruciton processing
+				// difficulty processing
+
 			}
 			else if (mIndex == 2) {
+				// Show instructions processing
 				// Conditional statement required, as you can spam the state instuctions state and it will be softlocked into 
 				// permanently displaying them
 				if (!mViewingInstructions) {
+					HideScoreLives();
 					ShowInstructions();
 
 				}
 			}
 			else if (mIndex == 3) {
-				//
-			}
+				// Ask user for name processing
+				// enter game tag
+				AskUserGUI();
+				// enters the ask user state screen
+				mAskUser = true;
+				// show current user name
+				
+
+			}	
 		    // prevent further processing, as somehow shooting occurs if not early return.
 			return;
 		}
 		break;
+
+
 
 	case ' ':
 		// space bar also a traveller 
@@ -141,10 +185,9 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 			HideInstructions();
 			mViewingInstructions = false;
 			ShowStartMenuComponents();
-
-			
-			
+		
 		}
+
 		break;
 	
 
@@ -245,6 +288,8 @@ void Asteroids::OnTimer(int value)
 	if (value == SHOW_GAME_OVER)
 	{
 		mGameOverLabel->SetVisible(true);
+		// can use everywhere
+		mGameOver = true;
 	}
 
 }
@@ -286,13 +331,52 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 		mGameWorld->AddObject(asteroid);
 	}
 }
+void Asteroids::CreateTableView() {
+	
+
+}
+void Asteroids::AskUserGUI() {
+
+
+	HideStartMenuComponents();
+	mAskUserLabel = make_shared<GUILabel>("Enter Name");
+	mAskUserLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> ask_user_component
+		= static_pointer_cast<GUIComponent>(mAskUserLabel);
+	mGameDisplay->GetContainer()->AddComponent(ask_user_component, GLVector2f(0.37f, 0.7));
+
+	mAskUserLabel2 = make_shared<GUILabel>("Enter to Confirm");
+	mAskUserLabel2->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> ask_user2_component
+		= static_pointer_cast<GUIComponent>(mAskUserLabel2);
+	mGameDisplay->GetContainer()->AddComponent(ask_user2_component, GLVector2f(0.3f, 0.3));
+
+	// user input label
+	mUserInputLabel = make_shared<GUILabel>("");
+	mUserInputLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> user_input_component
+		= static_pointer_cast<GUIComponent>(mUserInputLabel);
+	mGameDisplay->GetContainer()->AddComponent(user_input_component, GLVector2f(0.3f, 0.5));
+
+}
+
 void Asteroids::CreateStartGUI() {
     // Start Screen Label
 	mStartScreenLabel = make_shared<GUILabel>("Start Screen");
 	mStartScreenLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
 	shared_ptr<GUIComponent> menu_component
 		= static_pointer_cast<GUIComponent>(mStartScreenLabel);
-	mGameDisplay->GetContainer()->AddComponent(menu_component, GLVector2f(0.4f, 1.0f));
+	mGameDisplay->GetContainer()->AddComponent(menu_component, GLVector2f(0.37f, 1.0f));
+	// Information On Navigating
+	mNavigationLabel = make_shared<GUILabel>("(Space Bar Scroll)");
+	mNavigationLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> navigate_component
+		= static_pointer_cast<GUIComponent>(mNavigationLabel);
+	mGameDisplay->GetContainer()->AddComponent(navigate_component, GLVector2f(0.3, 0.95f));
+
+
+	
+	
 	// Start Label
 	mStartLabel = make_shared<GUILabel>("Start Game");
 	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
@@ -318,6 +402,7 @@ void Asteroids::CreateStartGUI() {
 	shared_ptr<GUIComponent> tag_component
 		= static_pointer_cast<GUIComponent>(mGamerTagLabel);
 	mGameDisplay->GetContainer()->AddComponent(tag_component, GLVector2f(0.4f, 0.2f));
+	HideScoreLives();
 
 }
 void Asteroids::HighlightLabels() {
@@ -419,6 +504,20 @@ void Asteroids::CreateInstructions() {
 	mGameDisplay->GetContainer()->AddComponent(instructions_component7, GLVector2f(0.23, 0.2f));
 
 }
+// hide ask user method
+void Asteroids::HideAskUserGUI() {
+	if (mAskUserLabel) {
+		mAskUserLabel->SetVisible(false);
+	}
+	if (mAskUserLabel2) {
+		mAskUserLabel2->SetVisible(false);
+	}
+	if (mUserInputLabel) {
+		mUserInputLabel->SetVisible(false);
+	}
+	//...
+
+}
 // hide instructions method
 void Asteroids::HideInstructions() {
 	if (mInstructionsTextLabel1) {
@@ -465,8 +564,38 @@ void Asteroids::HideStartMenuComponents() {
 	if (mNameEntryLabel) {
 		mNameEntryLabel->SetVisible(false);
 	}
+	if (mNavigationLabel) {
+		mNavigationLabel->SetVisible(false);
+	}
+	
+	
+
+
+	
 }
-// inverse of the HideStart method good to have
+// Hide score and lives called after CreateStartGUI.
+void Asteroids::HideScoreLives() {
+	if (mLivesLabel) {
+		mLivesLabel->SetVisible(false);
+
+	}
+	if (mScoreLabel) {
+		mScoreLabel->SetVisible(false);
+
+	}
+ }
+// View score and lives 
+void Asteroids::ViewScoreLives() {
+	if (mLivesLabel) {
+		mLivesLabel->SetVisible(true);
+
+	}
+	if (mScoreLabel) {
+		mScoreLabel->SetVisible(true);
+
+	}
+}
+// View HideStart method good to have
 // helper method
 void Asteroids::ShowStartMenuComponents() {
 	// check if null before accessing pointers to guard against null pointers
@@ -488,6 +617,9 @@ void Asteroids::ShowStartMenuComponents() {
 	}
 	if (mNameEntryLabel) {
 		mNameEntryLabel->SetVisible(true);
+	}
+	if (mNavigationLabel) {
+		mNavigationLabel->SetVisible(true);
 	}
 }
 
