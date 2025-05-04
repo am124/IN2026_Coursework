@@ -48,6 +48,9 @@ public:
 
 	void WrapXY(float &x, float &y);
 
+	// added method
+	void RemoveAllObjects();
+
 protected:
 	void UpdateObjects(int t);
 	void UpdateCollisions(int t);

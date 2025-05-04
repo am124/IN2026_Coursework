@@ -11,7 +11,7 @@
 #include "BoundingSphere.h"
 #include "GUILabel.h"
 #include "Explosion.h"
-
+#include <algorithm>
 // PUBLIC INSTANCE CONSTRUCTORS ///////////////////////////////////////////////
 
 /** Constructor. Takes arguments from command line, just in case. */
@@ -70,6 +70,7 @@ void Asteroids::Start()
 	CreateAsteroids(10);
 	//Create the GUI
 	CreateGUI();
+
 	HideScoreLives();
 
 	// Add a player (watcher) to the game world
@@ -124,7 +125,26 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 			std::cout << "Player Name Entered: " << mAskUser << std::endl;
 			ShowStartMenuComponents();
          }
-
+		else if (mGameOver) {
+			GameOverView();
+			mGameOverScreen = true;
+			mScoreKeeper.ResetScore();
+			// reset game state method
+			 mGameOver = false;
+			 mGameOverLabel->SetVisible(false);
+			 
+		}
+		else if (mGameOverScreen) {
+			ShowStartMenuComponents();
+			mGameOverLabel->SetVisible(false);
+			HideScoreLives();
+			HideScoreboard();
+			mGameStarted = false;
+			mViewingInstructions = false;
+			mAskUser = false;
+			mGameOverScreen = false;
+			mGameOver = false;
+		}
 
         else if (!mGameStarted) {
 			
@@ -136,7 +156,7 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				CreateGUI();
 				mGameWorld->AddObject(CreateSpaceship());
 				// enter turns to true state
-				mGameStarted = true;
+				GameStartedBoolean();
 
 			}
 			else if (mIndex == 1) {
@@ -150,6 +170,10 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				if (!mViewingInstructions) {
 					HideScoreLives();
 					ShowInstructions();
+					// BOOLEAN
+					ViewingInstructionsBoolean();
+					
+					
 
 				}
 			}
@@ -290,6 +314,8 @@ void Asteroids::OnTimer(int value)
 		mGameOverLabel->SetVisible(true);
 		// can use everywhere
 		mGameOver = true;
+		
+		
 	}
 
 }
@@ -331,10 +357,49 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 		mGameWorld->AddObject(asteroid);
 	}
 }
-void Asteroids::CreateTableView() {
-	
+void Asteroids::GameOverView() {
+	Gamer newGamer;
+	newGamer.name = mStringInput;
+	newGamer.score = mScoreRetrieved;
+	mGamerVector.push_back(newGamer);
 
+	// sort the score in descending order
+	//sort(mGamerVector.begin(), mGamerVector.end(), [](const Gamer& a, const Gamer& b) {
+		//return a.score > b.score;
+		//});
+	// display the make shift table by looping through vector
+	for (int i = 0; i < mGamerVector.size(); i++) {
+		// crete label. use auto so it doesn't overwrite removed my prev declaration in header
+		// vector gets populated when you are press enter in game over state.
+		auto mEntryLabel = make_shared<GUILabel>("Enter Name");
+		mEntryLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+
+		// we need to put score and name into a single string. makes it all a string. For use in label to view
+		std::ostringstream entry;
+		entry << (i + 1) << ". " << mGamerVector[i].name << " " << mGamerVector[i].score;
+		std::string entry_msg = entry.str();
+		mEntryLabel->SetText(entry_msg);
+	
+		float offsetX = 0.05f;
+		float y = 0.5f;
+
+		// uses i, so that the y coordinate changes depending on how many you have.
+		shared_ptr<GUIComponent> entry_label_component
+			= static_pointer_cast<GUIComponent>(mEntryLabel);
+		mGameDisplay->GetContainer()->AddComponent(entry_label_component, GLVector2f(0.37f, y + i * offsetX));	
+
+		mScoreboardLabels.push_back(mEntryLabel);
+	}
 }
+void Asteroids::HideScoreboard() {
+	for (auto& label : mScoreboardLabels) {
+		mGameDisplay->GetContainer()->RemoveComponent(label);
+	}
+	mScoreboardLabels.clear(); // Clean up list after removal
+}
+
+
+
 void Asteroids::AskUserGUI() {
 
 
@@ -374,9 +439,6 @@ void Asteroids::CreateStartGUI() {
 		= static_pointer_cast<GUIComponent>(mNavigationLabel);
 	mGameDisplay->GetContainer()->AddComponent(navigate_component, GLVector2f(0.3, 0.95f));
 
-
-	
-	
 	// Start Label
 	mStartLabel = make_shared<GUILabel>("Start Game");
 	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
@@ -460,9 +522,6 @@ void Asteroids::ShowInstructions() {
 	// we also need to create a new label that has a shared pointer assigned to it. shared pointer declared 
 	// in header file.
 	CreateInstructions();
-
-	mViewingInstructions = true;
-
 
 
 }
@@ -567,9 +626,6 @@ void Asteroids::HideStartMenuComponents() {
 	if (mNavigationLabel) {
 		mNavigationLabel->SetVisible(false);
 	}
-	
-	
-
 
 	
 }
@@ -622,9 +678,53 @@ void Asteroids::ShowStartMenuComponents() {
 		mNavigationLabel->SetVisible(true);
 	}
 }
+// BOOLEAN MANAGEMENT:
+void Asteroids::GameStartedBoolean() {
+	mGameStarted = true;
+	mViewingInstructions = false;
+	mAskUser = false;
+	mGameOverScreen = false;
+	// this is done by game.  
+	//mGameOver = false;
+}
+void Asteroids::ViewingInstructionsBoolean() {
+	mGameStarted = false;
+	mViewingInstructions = true;
+	mAskUser = false;
+	mGameOverScreen = false;
+	// this is done by game.  
+	//mGameOver = false;
+}
+void Asteroids::AskUserBoolean() {
+	mGameStarted = false;
+	mViewingInstructions = false;
+	mAskUser = true;
+	mGameOverScreen = false;
+	// this is done by game.  
+	//mGameOver = false;
+}
+void Asteroids::GameOverScreenBoolean() {
+	mGameStarted = false;
+	mViewingInstructions = false;
+	mAskUser = false;
+	mGameOverScreen = true;
+	// this is done by game.  
+	//mGameOver = false;
+}
+void Asteroids::GameOverBoolean() {
+	mGameStarted = false;
+	mViewingInstructions = false;
+	mAskUser = false;
+	mGameOverScreen = false;
+	//this is done by game.  
+	//mGameOver = true;
+}
+
+
 
 void Asteroids::OnScoreChanged(int score)
 {
+	mScoreRetrieved = score;
 	// Format the score message using an string-based stream
 	std::ostringstream msg_stream;
 	msg_stream << "Score: " << score;

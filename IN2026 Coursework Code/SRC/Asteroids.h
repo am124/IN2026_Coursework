@@ -84,6 +84,8 @@ private:
 	// a method to initliase them
 	void CreateInstructions();
 	void HideInstructions();
+	// label for score table
+	//shared_ptr<GUILabel> mEntryLabel;
 
 
 
@@ -114,9 +116,9 @@ private:
 	shared_ptr<GUILabel> mUserInputLabel;
 
 
-
+	bool mGameOverScreen = false;
 	// table view
-	void CreateTableView();
+	void GameOverView();
 	// hide start menu method when gaming 
 	void HideStartMenuComponents();
 	// also show the componentes 
@@ -127,17 +129,30 @@ private:
 	void ViewScoreLives();
 	// game over state
 	bool mGameOver = false;
-	// player struct
+	// player struct. The score saved separetly after game calls onscore on asteroids  
 	struct Gamer {
 		string name;
 		int score;
 	 };
+	// obtained from on score method
+	int mScoreRetrieved;
 	// will fill up vector with player from the struct
 	vector<Gamer> mGamerVector;
-
-	const static uint SHOW_GAME_OVER = 0;
+	// to remove labels associated with the result of player struct
+	vector<shared_ptr<GUILabel>> mScoreboardLabels;
+	// method to hide it
+	void HideScoreboard();
+    const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;
+
+	//manage booleans states reliably
+	void GameStartedBoolean();
+	void ViewingInstructionsBoolean();
+	void AskUserBoolean();
+	void GameOverBoolean();
+	void GameOverScreenBoolean();
+
 
 	ScoreKeeper mScoreKeeper;
 	// this player will be used more for part 2, but for part 1, going to use a struct for

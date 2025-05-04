@@ -37,6 +37,12 @@ public:
 			(*lit)->OnScoreChanged(mScore);
 		}
 	}
+	// to reset score
+	void ResetScore() {
+		mScore = 0;
+		// notify asteroids as its listener
+		FireScoreChanged();
+	}
 
 private:
 	int mScore;
